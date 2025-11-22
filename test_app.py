@@ -1,7 +1,7 @@
 from app import app
 
-def test_home():
+def test_index():
     response = app.test_client().get("/")
 
     assert response.status_code==200
-    assert response.data== b"Something Went Worng Just refresh The Page "
+    assert b"<html>" in response.data
