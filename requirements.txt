@@ -1,0 +1,9 @@
+flask
+werkzeug
+pandas
+numpy
+openpyxl
+xlrd
+xlsxwriter
+pytest
+

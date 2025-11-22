@@ -1,0 +1,107 @@
+/* ============================
+   GLOBAL PAGE STYLING
+   ============================ */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 30px;
+    background: linear-gradient(to bottom right, #d7f3ff, #a7e0f7);
+}
+
+/* ============================
+   HEADINGS
+   ============================ */
+h1, h2 {
+    text-align: center;
+    color: #005f99;
+    text-shadow: 1px 1px 2px #ffffff;
+}
+
+/* ============================
+   UPLOAD BOX CONTAINER
+   ============================ */
+.box {
+    width: 250px;
+    margin: 40px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================
+   TABLE STYLE (Index2.html)
+   ============================ */
+table {
+    width: 80%;
+    margin: 30px auto;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+th {
+    background: #b9e7ff;
+    padding: 12px;
+    color: #003d66;
+    font-size: 15px;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #e6e6e6;
+    text-align: center;
+}
+
+/* ============================
+   BUTTON STYLE
+   ============================ */
+button,
+.button-link {
+    background: #0099e6;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.2s;
+}
+
+button:hover,
+.button-link:hover {
+    background: #0077b5;
+}
+
+/* ============================
+   FILE INPUT
+   ============================ */
+input[type="file"] {
+    margin-top: 8px;
+    padding: 6px;
+    border-radius: 6px;
+    background: #e1f5ff;
+    border: 1px solid #b0e1ff;
+}
+
+/* ============================
+   NOTICE / FLASH MESSAGE
+   ============================ */
+.notice {
+    text-align: center;
+    color: green;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+.flash-error {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Merge Data Website</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 style="color: blue;">PPN And Company</h1>
+
+            <h3>Upload Your All Sales Performance Excel File In One Folder With Branch Name</h3>
+            <p class="subtitle">Keep The Excel File Name As TVH.xlsx,CHN-HYP.xlsx</p>
+        </header>
+
+        <form id="uploadForm" action="/merge" method="POST" enctype="multipart/form-data">
+            <label class="folder-label">
+                <input type="file" name="files" webkitdirectory directory multiple id="folderInput">
+                <div class="folder-box">
+                    <div class="folder-icon">📁</div>
+                    <div>
+                        <strong>Upload Combine Excel Folder</strong>
+                        <div class="muted">Download Combine_data.xlsx</div>
+                    </div>
+                </div>
+            </label>
+
+            <div id="fileSummary" class="file-summary">No folder chosen.</div>
+
+            <div class="actions">
+                <button type="submit" class="btn">Download Here </button>
+            </div>
+        </form>
+
+        <footer>
+            <small>Note: Folder upload works in Chrome, Edge, Opera (webkitdirectory support).</small>
+        </footer>
+    <div class="container1">
+
+        <h3>To Download The Annexure From Sales Performance Click Here </h3>
+
+        <!-- Your existing folder upload box -->
+
+        <!-- ========================= -->
+        <!-- New Box That Opens Another Page -->
+        <!-- ========================= -->
+
+        <a href="/next" class="click-box">
+            <div class="box">
+                <strong>Click Here</strong><br>
+                Open Annexure Download Page
+            </div>
+        </a>
+
+    </div>
+    <div class="container2">
+
+        <h3>To Download The Annexure From Sales Attribute Click Here </h3>
+
+        <!-- Your existing folder upload box -->
+
+        <!-- ========================= -->
+        <!-- New Box That Opens Another Page -->
+        <!-- ========================= -->
+
+        <a href="/nextAgain" class="click-box">
+            <div class="box">
+                <strong>Click Here</strong><br>
+                Open Annexure Download Page
+            </div>
+        </a>
+
+    </div>
+
+
+    </div>
+
+    <script>
+    // Quick client-side summary (no extra libs)
+    const input = document.getElementById('folderInput');
+    const summary = document.getElementById('fileSummary');
+
+    input.addEventListener('change', () => {
+        const files = Array.from(input.files || []);
+        if (files.length === 0) {
+            summary.textContent = 'No folder chosen.';
+            return;
+        }
+        const excelFiles = files.filter(f => f.name.endsWith('.xlsx') || f.name.endsWith('.xls'));
+        summary.innerHTML = `<strong>${excelFiles.length}</strong> Excel file(s) detected — total files in folder: ${files.length}.`;
+    });
+    </script>
+</body>
+</html>
