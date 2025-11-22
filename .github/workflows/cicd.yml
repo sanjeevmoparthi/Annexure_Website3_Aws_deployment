@@ -1,5 +1,5 @@
-name: CI/CD for Dockerized Flask App
-name: CI/CD for Dockerized Flask App
+name: CI/CD for Annexure Dockerized Flask App
+
 
 on:
   push:
