@@ -820,96 +820,7 @@ def annexure9_generate_excel_bytes(df):
     return output
 
 
-# annexure_functions.py
 
-
-
-# def annexure10_generate_excel_bytes(df):
-#     """
-#     Generates Annexure 10 Excel file with each department as a separate sheet
-#     in a single Excel workbook.
-#     Only includes rows where Sold Quantity > 0 and Profit/Vendor Margin filters applied.
-#     """
-#     from io import BytesIO
-#     import pandas as pd
-#     from openpyxl import Workbook
-#     from openpyxl.styles import Font, Alignment
-#     df = df.copy()
-
-#     # Ensure required columns exist
-#     required_cols = ["Sold Quantity", "Sold Value", "Net Value", "MRP", "Department"]
-#     for col in required_cols:
-#         if col not in df.columns:
-#             raise KeyError(f"Missing required column: {col}")
-
-#     # Keep only rows with Sold Quantity > 0
-#     df = df[df["Sold Quantity"] > 0].copy()
-
-#     # Calculations
-#     df["Sales per Qty"] = df["Sold Value"] / df["Sold Quantity"]
-#     df["Lcost per Qty"] = df["Net Value"] / df["Sold Quantity"]
-#     df["Vendor Margin %"] = ((df["MRP"] - df["Lcost per Qty"]) * 100) / df["MRP"]
-#     df["Profit Margin %"] = ((df["Sales per Qty"] - df["Lcost per Qty"]) * 100) / df["Sales per Qty"]
-#     df["Profit Amount"] = df["Sales per Qty"] - df["Lcost per Qty"]
-
-#     # Round values
-#     df[["Sales per Qty", "Lcost per Qty","Profit Amount", "Vendor Margin %", "Profit Margin %"]] = \
-#         df[["Sales per Qty", "Lcost per Qty", "Vendor Margin %", "Profit Margin %"]].round(2)
-
-#     # Apply conditions
-#     df = df[df["Vendor Margin %"] != df["Profit Margin %"]]
-#     df = df[df["Profit Margin %"] >= 0]
-
-#     # Columns to include in final sheet
-#     final_cols = [
-#         "Name", "Location", "MRP", "Sold Quantity",
-#         "Sales per Qty", "Lcost per Qty","Profit Amount",
-#         "Vendor Margin %", "Profit Margin %",
-#         "Product Code"
-#     ]
-
-#     # Create workbook
-#     wb = Workbook()
-#     wb.remove(wb.active)  # remove default sheet
-
-#     # Group by Department and create sheet per department
-#     for dept, g in df.groupby("Department"):
-#         g = g[final_cols]
-#         ws = wb.create_sheet(title=str(dept)[:31])  # Excel sheet name limit
-
-#         # Add heading
-#         headings = [
-#             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-#             "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
-#             f"DEPARTMENT - {dept}",
-#             "Annexure - X",
-#             "High Vendor Margin Less Profit Margin",
-#             "(Amount in Rs.)"
-#         ]
-
-#         for i, text in enumerate(headings, start=1):
-#             ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=len(final_cols))
-#             cell = ws.cell(row=i, column=1, value=text)
-#             cell.font = Font(bold=True)
-#             cell.alignment = Alignment(horizontal="center", vertical="center")
-
-#         # Add column headers
-#         start_row = len(headings) + 1
-#         for col_idx, col_name in enumerate(final_cols, start=1):
-#             cell = ws.cell(row=start_row, column=col_idx, value=col_name)
-#             cell.font = Font(bold=True)
-#             cell.alignment = Alignment(horizontal="center")
-
-#         # Add data rows
-#         for r_idx, row in enumerate(g.itertuples(index=False), start=start_row + 1):
-#             for c_idx, value in enumerate(row, start=1):
-#                 ws.cell(row=r_idx, column=c_idx, value=value)
-
-#     # Save workbook to bytes
-#     output = BytesIO()
-#     wb.save(output)
-#     output.seek(0)
-#     return output
 
 def annexure10_generate_excel_bytes(df):
     import pandas as pd
@@ -937,9 +848,15 @@ def annexure10_generate_excel_bytes(df):
     df["Profit Margin %"] = df["Profit Margin %"].round(2)
     df["Profit Amount"] = df["Profit Amount"].round(2)
 
-    # Conditions
-    df = df[df["Vendor Margin %"] != df["Profit Margin %"]]
-    df = df[df["Profit Margin %"] >= 0]
+    # ===============================
+    #       NEW FILTER CONDITIONS
+    # ===============================
+    df = df[
+        (df["Profit Amount"] > 0) &
+        (df["Vendor Margin %"] >= 40) &
+        (df["Profit Margin %"] <= 40) &
+        (df["Profit Margin %"] > 0) 
+    ]
 
     # Create workbook with multiple sheets per department
     wb = Workbook()
@@ -951,8 +868,8 @@ def annexure10_generate_excel_bytes(df):
 
         final_cols = [
             "Name", "Location", "MRP", "Sold Quantity",
-            "Sales per Qty", "Lcost per Qty","Profit Amount",
-            "Vendor Margin %", "Profit Margin %", 
+            "Sales per Qty", "Lcost per Qty", "Profit Amount",
+            "Vendor Margin %", "Profit Margin %",
             "Product Code"
         ]
         final = g[final_cols]
@@ -968,6 +885,7 @@ def annexure10_generate_excel_bytes(df):
             "High Vendor Margin Less Profit Margin",
             "(Amount in Rs.)"
         ]
+
         for i, text in enumerate(headings, start=1):
             ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=len(final.columns))
             cell = ws.cell(row=i, column=1, value=text)
@@ -982,7 +900,7 @@ def annexure10_generate_excel_bytes(df):
             cell.alignment = Alignment(horizontal="center")
 
         # Data rows
-        for r_idx, row in enumerate(final.itertuples(index=False), start=start_row+1):
+        for r_idx, row in enumerate(final.itertuples(index=False), start=start_row + 1):
             for c_idx, val in enumerate(row, start=1):
                 ws.cell(row=r_idx, column=c_idx, value=val)
 
@@ -991,4 +909,6 @@ def annexure10_generate_excel_bytes(df):
     wb.save(output)
     output.seek(0)
     return output
+
+
 
