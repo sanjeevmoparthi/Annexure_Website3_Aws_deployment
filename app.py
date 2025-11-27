@@ -44,6 +44,11 @@ def next():
 def nextAgain():
     return render_template("index3.html")
 
+@app.route("/index4")
+def index4():
+    return render_template("index4.html")
+
+
 # -------------------------------------------------------
 #                     MERGE PAGE
 # -------------------------------------------------------
@@ -330,6 +335,36 @@ def download_annexure10():
     except Exception as e:
         flash(f"Error generating Annexure-10: {e}", "danger")
         return redirect(url_for('index'))
+    
+@app.route('/download/11', methods=['POST'])
+def download_annexure11():
+
+    closing_file = request.files.get('closing')
+    sales_file = request.files.get('sales')
+    ibts_file = request.files.get('ibts')
+
+    if not all([closing_file, sales_file, ibts_file]):
+        flash("❌ Upload all 3 files: Closing, Sales, IBTS", "danger")
+        return redirect(url_for("index4"))
+
+    try:
+        closing_df = pd.read_excel(closing_file, skiprows=6)
+        sales_df   = pd.read_excel(sales_file)
+        ibts_df    = pd.read_excel(ibts_file)
+
+        out_io = annex.annexure11_generate_excel_bytes(closing_df, sales_df, ibts_df)
+
+        return send_file(
+            out_io,
+            as_attachment=True,
+            download_name="Annexure11_NonMovement.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    except Exception as e:
+        flash(f"❌ Annexure-11 Error: {str(e)}", "danger")
+        return redirect(url_for("index4"))
+
 
 
 

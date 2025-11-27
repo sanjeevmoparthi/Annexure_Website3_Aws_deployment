@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Non-Movement Stock Auditor</title>
+
+<style>
+body { font-family: Arial, sans-serif; background: #b9e7ff; margin: 0; padding: 0; }
+.container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+.header h1 { font-size: 2rem; margin-bottom: 10px; color: #333; }
+.header p { color: #666; margin-bottom: 30px; }
+.card { background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: space-between; }
+.upload-card { flex: 1 1 28%; background: #a3a8b6; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; }
+.upload-card:hover { background: #dce4ff; }
+.upload-card input { display: none; }
+.filename { margin-top: 10px; font-size: 0.9rem; }
+.action { text-align: center; margin-top: 30px; }
+.action button { background: #007bff; color: white; padding: 12px 25px; font-size: 1rem; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; gap: 10px; }
+.action button:hover { background: #0056b3; }
+.message { padding: 10px; border-radius: 6px; margin-top: 15px; display: inline-flex; gap: 8px; }
+.message.error { background:#ffe5e5; color:#c00; }
+.message.success { background:#e5ffe5; color:#080; }
+.footer { margin-top: 20px; font-size: 0.9rem; text-align:center; color:#555;}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header class="header">
+<h1>Non-Movement Stock Auditor</h1>
+<p>Upload your reports of each Branch to generate Annexure XI.</p>
+</header>
+
+<div class="card">
+<div class="grid">
+
+<div class="upload-card">
+<label>
+<b>Closing Stock</b><br>
+<input type="file" id="closingInput" accept=".xls,.xlsx">
+</label>
+<div class="filename" id="closingFile"></div>
+</div>
+
+<div class="upload-card">
+<label>
+<b>Sales File</b><br>
+<input type="file" id="salesInput" accept=".xls,.xlsx">
+</label>
+<div class="filename" id="salesFile"></div>
+</div>
+
+<div class="upload-card">
+<label>
+<b>IBTS File</b><br>
+<input type="file" id="ibtsInput" accept=".xls,.xlsx">
+</label>
+<div class="filename" id="ibtsFile"></div>
+</div>
+
+</div>
+
+<div id="messageBox"></div>
+
+<div class="action">
+<button id="processBtn">Generate Annexure XI</button>
+</div>
+
+<footer class="footer">
+Ensure Closing file starts from actual data row (skip 6 header rows as system does automatically).
+</footer>
+
+</div>
+</div>
+
+<script>
+const closingInput = document.getElementById("closingInput");
+const salesInput = document.getElementById("salesInput");
+const ibtsInput = document.getElementById("ibtsInput");
+
+const files = { closing:null, sales:null, ibts:null };
+
+function fileListener(input, key, label) {
+  input.addEventListener("change", e=>{
+    files[key] = e.target.files[0];
+    document.getElementById(label).innerText = files[key]?.name || "";
+  })
+}
+
+fileListener(closingInput,"closing","closingFile");
+fileListener(salesInput,"sales","salesFile");
+fileListener(ibtsInput,"ibts","ibtsFile");
+
+const messageBox = document.getElementById("messageBox");
+const btn = document.getElementById("processBtn");
+
+function showMessage(msg, type){
+  messageBox.innerHTML = `<div class="message ${type}">${msg}</div>`;
+}
+
+btn.onclick = async () => {
+
+  if(!files.closing || !files.sales || !files.ibts){
+    showMessage("Upload all three files.", "error");
+    return;
+  }
+
+  btn.innerText = "Processing...";
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append("closing", files.closing);
+  fd.append("sales", files.sales);
+  fd.append("ibts", files.ibts);
+
+  try {
+    const res = await fetch("/download/11", { method:"POST", body:fd });
+
+    if(!res.ok) throw new Error("Processing failed");
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Annexure11_NonMovement.xlsx";
+    a.click();
+
+    showMessage("Annexure XI generated ✅", "success");
+
+  } catch(err){
+    showMessage(err.message, "error");
+  }
+
+  btn.innerText = "Generate Annexure XI";
+  btn.disabled = false;
+};
+</script>
+
+</body>
+</html>

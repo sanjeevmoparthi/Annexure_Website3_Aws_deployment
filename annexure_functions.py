@@ -910,5 +910,103 @@ def annexure10_generate_excel_bytes(df):
     output.seek(0)
     return output
 
+def annexure11_generate_excel_bytes(closing_df, sales_df, ibts_df):
+    import pandas as pd
+    from io import BytesIO
+    import numpy as np
+
+    # --- CLEAN COLUMNS ---
+    def clean_cols(df):
+        df.columns = df.columns.map(lambda x: str(x).replace("\u00a0", "").strip())
+        return df
+
+    closing_df = clean_cols(closing_df)
+    sales_df   = clean_cols(sales_df)
+    ibts_df    = clean_cols(ibts_df)
+
+    # --- RENAME PRODUCT ATTRIBUTE ---
+    sales_df.rename(columns={"Product Attribute Id": "Product Attribute"}, inplace=True)
+    ibts_df.rename(columns={"Product Attribute Id": "Product Attribute"}, inplace=True)
+
+    if "Product Attribute" not in closing_df.columns:
+        raise Exception("❌ Product Attribute missing in Closing Stock")
+
+    # --- FILTER IBTS LBTS ONLY ---
+    if "Doc No" not in ibts_df.columns:
+        raise Exception("❌ Doc No missing in IBTS file")
+
+    ibts_df["Doc No"] = ibts_df["Doc No"].astype(str)
+    ibts_df = ibts_df[ibts_df["Doc No"].str.contains("LBTS", case=False, na=False)]
+    ibts_df = ibts_df[~ibts_df["Doc No"].str.contains("LBTR", case=False, na=False)]
+
+    # --- NORMALIZE ATTRIBUTE ---
+    def fix(df):
+        df["Product Attribute"] = df["Product Attribute"].astype(str).str.replace(".0", "", regex=False)
+        df["Product Attribute"] = pd.to_numeric(df["Product Attribute"], errors="coerce")
+        df.dropna(subset=["Product Attribute"], inplace=True)
+
+    fix(closing_df)
+    fix(sales_df)
+    fix(ibts_df)
+
+    sales_set = set(sales_df["Product Attribute"])
+    ibts_set  = set(ibts_df["Product Attribute"])
+
+    # --- GET NON MOVEMENT ---
+    non_move = closing_df[
+        (~closing_df["Product Attribute"].isin(sales_set)) &
+        (~closing_df["Product Attribute"].isin(ibts_set))
+    ].copy()
+
+    # --- FILTER TAXABLE ---
+    non_move["Taxable Amount"] = pd.to_numeric(non_move["Taxable Amount"], errors="coerce")
+    non_move = non_move[non_move["Taxable Amount"] != 0]
+
+    # --- QTY COLUMN ---
+    qty_candidates = ["Onhand Qty", "On Hand Qty", "Inhand Qty", "Stock Qty"]
+    qty_col = next((c for c in qty_candidates if c in non_move.columns), None)
+
+    if not qty_col:
+        raise Exception("Onhand Qty column not found")
+
+    non_move[qty_col] = pd.to_numeric(non_move[qty_col], errors="coerce")
+    non_move = non_move[non_move[qty_col] > 0]
+
+    # --- DEPARTMENT ---
+    if "Department" not in non_move.columns:
+        non_move["Department"] = "Unknown"
+
+    # --- FINAL COLUMNS ---
+    final_cols = [
+        "Name", "Department", "Category", "Sub Category", "Brand",
+        "Vendor", "Product Design", qty_col, "Value By MRP",
+        "Taxable Amount", "Product Attribute", "Tax Amount"
+    ]
+    final_cols = [c for c in final_cols if c in non_move.columns]
+
+    # --- CREATE EXCEL ---
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        for dept, df in non_move.groupby("Department"):
+            safe = str(dept).replace("/", "_")[:31]
+            sheet = writer.book.add_worksheet(safe)
+            writer.sheets[safe] = sheet
+
+            headers = [
+                "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
+                "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+                f"DEPARTMENT - {dept}",
+                "Annexure - XI",
+                "Non Movement of Stock for the period of 3 months",
+                "(Amount in Rs.)"
+            ]
+
+            for i, text in enumerate(headers):
+                sheet.merge_range(i, 0, i, len(final_cols)-1, text)
+
+            df[final_cols].to_excel(writer, sheet_name=safe, startrow=len(headers)+1, index=False)
+
+    output.seek(0)
+    return output
 
 
