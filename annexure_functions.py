@@ -842,11 +842,11 @@ def annexure10_generate_excel_bytes(df):
     df["Profit Amount"] = df["Sales per Qty"] - df["Lcost per Qty"]
 
     # Rounding
-    df["Sales per Qty"] = df["Sales per Qty"].round(2)
-    df["Lcost per Qty"] = df["Lcost per Qty"].round(2)
-    df["Vendor Margin %"] = df["Vendor Margin %"].round(2)
-    df["Profit Margin %"] = df["Profit Margin %"].round(2)
-    df["Profit Amount"] = df["Profit Amount"].round(2)
+    df["Sales per Qty"] = df["Sales per Qty"].round(0)
+    df["Lcost per Qty"] = df["Lcost per Qty"].round(0)
+    df["Vendor Margin %"] = df["Vendor Margin %"].round(0)
+    df["Profit Margin %"] = df["Profit Margin %"].round(0)
+    df["Profit Amount"] = df["Profit Amount"].round(0)
 
     # ===============================
     #       NEW FILTER CONDITIONS
