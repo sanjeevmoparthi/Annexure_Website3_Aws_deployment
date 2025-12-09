@@ -697,6 +697,7 @@ def annexure8_generate_excel_bytes(df):
     output.seek(0)
     return output.getvalue()
 
+
 def annexure9_generate_excel_bytes(df):
     import pandas as pd
     import numpy as np
@@ -705,80 +706,92 @@ def annexure9_generate_excel_bytes(df):
     from openpyxl.styles import Font, Alignment
     from openpyxl.utils import get_column_letter
 
-    # Normalize column names
+    # ------------------------------------
+    # NORMALIZE COLUMNS
+    # ------------------------------------
     df = df.copy()
     df.columns = df.columns.str.strip().str.lower()
 
-    # Helper to detect columns
+    # ------------------------------------
+    # FLEXIBLE COLUMN FINDER
+    # ------------------------------------
     def find_col(possible):
         for c in df.columns:
-            if c in possible:
-                return c
+            for p in possible:
+                if p in c:
+                    return c
         return None
 
-    item_code_col = find_col(["item code", "itemcode", "product code"])
-    product_name_col = find_col(["product name", "productname", "name"])
-    branch_col = find_col(["branch"])
+    name_col = find_col(["name", "product name"])
+    branch_col = find_col(["branch", "location", "store"])
     mrp_col = find_col(["mrp"])
     sold_qty_col = find_col(["sold qty", "soldquantity", "sold quantity"])
     sold_value_col = find_col(["sold value", "soldvalue"])
-    landed_col = find_col(["net value", "netvalue", "total landedcost", "total landed cost"])
-    dept_col = find_col(["department", "product department", "productdepartment"])
+    landed_col = find_col(["net value", "netvalue", "total landed cost"])
+    product_code_col = find_col(["product code", "item code", "itemcode"])
+    dept_col = find_col(["department", "product department"])
 
-    # REQUIRED COLUMNS CHECK
+    # Required fields check
     required = [sold_qty_col, sold_value_col, landed_col]
     if not all(required):
-        raise KeyError("Missing required columns: Sold Quantity, Sold Value, Landed Cost")
+        raise KeyError("Missing required columns: Sold Quantity, Sold Value, Net Value")
 
+    # If dept missing → default
     if dept_col is None:
         df["department"] = "All"
         dept_col = "department"
 
+    # Positive quantity only
     df = df[df[sold_qty_col] > 0].copy()
 
-    # Convert to numeric
+    # Convert numerics
     for col in [sold_qty_col, sold_value_col, landed_col, mrp_col]:
         if col:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
-    # DERIVED METRICS
-    df["Sales per Qty"] = np.where(df[sold_qty_col] != 0, df[sold_value_col] / df[sold_qty_col], 0)
-    df["L Cost per Qty"] = np.where(df[sold_qty_col] != 0, df[landed_col] / df[sold_qty_col], 0)
+    # Derived metrics
+    df["sales_per_qty"] = np.where(df[sold_qty_col] != 0, df[sold_value_col] / df[sold_qty_col], 0)
+    df["lcost_per_qty"] = np.where(df[sold_qty_col] != 0, df[landed_col] / df[sold_qty_col], 0)
+    df["profit_amount"] = df[sold_value_col] - df[landed_col]
 
-    # CONDITION FOR ANNEXURE 9 — ZERO PROFIT / ZERO LOSS
-    filtered = df[np.isclose(df[sold_value_col], df[landed_col], atol=0.01)].copy()
+    # FILTER — ZERO PROFIT
+    filtered = df[np.isclose(df["profit_amount"], 0, atol=0.01)].copy()
 
     if filtered.empty:
-        raise ValueError("No products found where Sold Value = Total Landed Cost.")
+        raise ValueError("No products found: Sold Value = Landed Cost")
 
-    # PREPARE WORKBOOK
+    # ------------------------------------
+    # WORKBOOK SETUP
+    # ------------------------------------
     wb = Workbook()
     wb.remove(wb.active)
 
     for dept, g in filtered.groupby(dept_col):
         g = g.reset_index(drop=True)
-        g["S.No"] = range(1, len(g) + 1)
+        g["s_no"] = range(1, len(g) + 1)
 
-        # Prepare final sheet data
+        # Final output table
         final = pd.DataFrame({
-            "S.No": g["S.No"],
-            "Item Code": g.get(item_code_col, ""),
-            "Product Name": g.get(product_name_col, ""),
+            "S.No": g["s_no"],
+            "Product Name": g.get(name_col, ""),
             "Branch": g.get(branch_col, ""),
             "MRP": g.get(mrp_col, 0).round(2),
             "Sold Quantity": g[sold_qty_col].round(2),
-            "Sales per Qty": g["Sales per Qty"].round(2),
-            "L Cost per Qty": g["L Cost per Qty"].round(2),
+            "Sales per Qty": g["sales_per_qty"].round(2),
+            "Landed Cost per Qty": g["lcost_per_qty"].round(2),
             "Sold Value": g[sold_value_col].round(2),
             "Total Landed Cost": g[landed_col].round(2),
-            "Difference (Sales - Landed)": (g[sold_value_col] - g[landed_col]).round(2)
+            "Difference (Sales - Landed)": g["profit_amount"].round(2),
+            "Product Code": g.get(product_code_col, "")
         })
 
-        # Sheet creation
+        # ------------------------------------
+        # SHEET CREATION
+        # ------------------------------------
         safe_name = str(dept).replace("/", "_").replace("\\", "_")[:31]
         ws = wb.create_sheet(title=safe_name)
 
-        # HEADINGS
+        # Headers block
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
             "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
@@ -810,10 +823,13 @@ def annexure9_generate_excel_bytes(df):
         # Auto column width
         for i, col_cells in enumerate(ws.columns, start=1):
             col_letter = get_column_letter(i)
-            max_len = max(len(str(cell.value)) for cell in col_cells if cell.value)
+            try:
+                max_len = max(len(str(cell.value)) for cell in col_cells if cell.value)
+            except:
+                max_len = 10
             ws.column_dimensions[col_letter].width = max_len + 3
 
-    # Return file as bytes
+    # Return file bytes
     output = BytesIO()
     wb.save(output)
     output.seek(0)
