@@ -55,7 +55,7 @@ def annexure1_generate_excel_bytes(df: pd.DataFrame) -> BytesIO:
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
             f"DEPARTMENT - {str(dept).upper()}",
             "Annexure - I",
             "Vendor Wise Margin",
@@ -138,7 +138,7 @@ def annexure2_generate_excel_bytes(df):
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 to 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 to 31-DEC-2025",
             f"DEPARTMENT - {dept}",
             "Annexure-II",
             "Brand Wise Margin",
@@ -208,7 +208,7 @@ def annexure3_generate_excel_bytes(df):
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 to 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 to 31-DEC-2025",
             f"DEPARTMENT - {dept}",
             "Annexure - III",
             "Brand Wise Sales Quantity & Value",
@@ -296,7 +296,7 @@ def annexure4_generate_excel_bytes(df):
 
         header_texts = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - IV",
             "Product Wise Sales Quantity And Value",
@@ -397,7 +397,7 @@ def annexure5_generate_excel_bytes(df):
         # ----------------------------
         header_texts = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - V",
             "Product Category Contribution - All Branches",
@@ -529,7 +529,7 @@ def annexure6_generate_excel_bytes(df):
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - VI",
             "List of Products Sold at a Profit Below 10%",
@@ -659,7 +659,7 @@ def annexure8_generate_excel_bytes(df):
         # Header lines
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - VIII",
             "Selling Price Less Than Purchase Cost",
@@ -794,7 +794,7 @@ def annexure9_generate_excel_bytes(df):
         # Headers block
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - IX",
             "List of Products Checked & Matched (Neither Profit Nor Loss)",
@@ -895,7 +895,7 @@ def annexure10_generate_excel_bytes(df):
         # Add headings
         headings = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
             f"DEPARTMENT - {dept}",
             "Annexure - X",
             "High Vendor Margin Less Profit Margin",
@@ -1010,7 +1010,7 @@ def annexure11_generate_excel_bytes(closing_df, sales_df, ibts_df):
 
             headers = [
                 "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-                "INTERNAL AUDIT FOR THE PERIOD 01-OCT-2025 TO 31-OCT-2025",
+                "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
                 f"DEPARTMENT - {dept}",
                 "Annexure - XI",
                 "Non Movement of Stock for the period of 3 months",
