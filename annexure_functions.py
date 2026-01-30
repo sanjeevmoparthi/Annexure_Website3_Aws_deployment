@@ -14,35 +14,35 @@ def annexure1_generate_excel_bytes(df: pd.DataFrame) -> BytesIO:
 
     required_cols = [
         'Branch', 'Vendor Name', 'Product Department',
-        'MRP', 'Sold Qty', 'Sold Value', 'Total LandedCost'
+        'MRP', 'Sold Qty', 'Sales-taxable', 'Purchase-taxable'
     ]
 
     missing = [c for c in required_cols if c not in df.columns]
     if missing:
         raise ValueError(f"Missing columns: {missing}")
 
-    df['Profit'] = df['Sold Value'] - df['Total LandedCost']
+    df['Net Profit'] = df['Sales-taxable'] - df['Purchase-taxable']
 
     summary = (
         df.groupby(['Branch', 'Vendor Name', 'Product Department'], as_index=False)
         .agg({
             'MRP': 'sum',
             'Sold Qty': 'sum',
-            'Sold Value': 'sum',
-            'Total LandedCost': 'sum',
-            'Profit': 'sum'
+            'Sales-taxable': 'sum',
+            'Purchase-taxable': 'sum',
+            'Net Profit': 'sum'
         })
     )
 
-    summary['Margin (%)'] = ((summary['Profit'] / summary['Sold Value']) * 100).round(2)
+    summary['Margin (%)'] = ((summary['Net Profit'] / summary['Sales-taxable']) * 100).round(2)
 
-    branch_sales = summary.groupby('Branch')['Sold Value'].sum().sort_values(ascending=False)
+    branch_sales = summary.groupby('Branch')['Sales-taxable'].sum().sort_values(ascending=False)
     summary['Branch'] = pd.Categorical(
         summary['Branch'],
         categories=branch_sales.index.tolist(),
         ordered=True
     )
-    summary.sort_values(by=['Branch', 'Sold Value'], ascending=[True, False], inplace=True)
+    summary.sort_values(by=['Branch', 'Sales-taxable'], ascending=[True, False], inplace=True)
 
     wb = Workbook()
     std = wb.active
@@ -55,7 +55,7 @@ def annexure1_generate_excel_bytes(df: pd.DataFrame) -> BytesIO:
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
             f"DEPARTMENT - {str(dept).upper()}",
             "Annexure - I",
             "Vendor Wise Margin",
@@ -72,8 +72,8 @@ def annexure1_generate_excel_bytes(df: pd.DataFrame) -> BytesIO:
 
         table_cols = [
             'Branch', 'Vendor Name', 'Product Department',
-            'MRP', 'Sold Qty', 'Sold Value',
-            'Total LandedCost', 'Profit', 'Margin (%)'
+            'MRP', 'Sold Qty', 'Sales-taxable',
+            'Purchase-taxable', 'Net Profit', 'Margin (%)'
         ]
 
         for col_idx, col_name in enumerate(table_cols, start=1):
@@ -102,17 +102,17 @@ def annexure2_generate_excel_bytes(df):
 
     required_cols = [
         "Branch", "Brand", "Product Department",
-        "MRP", "Sold Qty", "Sold Value", "Total LandedCost", "Profit"
+        "MRP", "Sold Qty", "Sales-taxable", "Purchase-taxable", "Net Profit"
     ]
 
     missing = [c for c in required_cols if c not in df.columns]
     if missing:
         raise Exception(f"Missing required columns: {missing}")
 
-    if "Profit" not in df.columns:
-        df["Profit"] = df["Sold Value"] - df["Total LandedCost"]
+    if "Net Profit" not in df.columns:
+        df["Net Profit"] = df["Sales-taxable"] - df["Purchase-taxable"]
 
-    df["Margin %"] = (df["Profit"] / df["Sold Value"]) * 100
+    df["Margin %"] = (df["Net Profit"] / df["Sales-taxable"]) * 100
     df["Margin %"] = df["Margin %"].round(2)
 
     summary = (
@@ -120,14 +120,18 @@ def annexure2_generate_excel_bytes(df):
         .agg({
             "MRP": "sum",
             "Sold Qty": "sum",
-            "Sold Value": "sum",
-            "Total LandedCost": "sum",
-            "Profit": "sum",
-            "Margin %": "mean"
+            "Sales-taxable": "sum",
+            "Purchase-taxable": "sum",
+            "Net Profit": "sum"
         })
     )
 
-    summary = summary.sort_values(by=["Branch", "Sold Value"], ascending=[True, False])
+    summary["Margin %"] = (
+        summary["Net Profit"] / summary["Sales-taxable"] * 100
+    )
+
+
+    summary = summary.sort_values(by=["Branch", "Sales-taxable"], ascending=[True, False])
 
     wb = Workbook()
     wb.remove(wb.active)
@@ -138,7 +142,7 @@ def annexure2_generate_excel_bytes(df):
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 to 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 to 31-JAN-2026",
             f"DEPARTMENT - {dept}",
             "Annexure-II",
             "Brand Wise Margin",
@@ -208,7 +212,7 @@ def annexure3_generate_excel_bytes(df):
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 to 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 to 31-JAN-2026",
             f"DEPARTMENT - {dept}",
             "Annexure - III",
             "Brand Wise Sales Quantity & Value",
@@ -296,7 +300,7 @@ def annexure4_generate_excel_bytes(df):
 
         header_texts = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - IV",
             "Product Wise Sales Quantity And Value",
@@ -397,7 +401,7 @@ def annexure5_generate_excel_bytes(df):
         # ----------------------------
         header_texts = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - V",
             "Product Category Contribution - All Branches",
@@ -529,7 +533,7 @@ def annexure6_generate_excel_bytes(df):
 
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - VI",
             "List of Products Sold at a Profit Below 10%",
@@ -659,7 +663,7 @@ def annexure8_generate_excel_bytes(df):
         # Header lines
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - VIII",
             "Selling Price Less Than Purchase Cost",
@@ -794,7 +798,7 @@ def annexure9_generate_excel_bytes(df):
         # Headers block
         headers = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
             f"DEPARTMENT - {dept.upper()}",
             "Annexure - IX",
             "List of Products Checked & Matched (Neither Profit Nor Loss)",
@@ -895,7 +899,7 @@ def annexure10_generate_excel_bytes(df):
         # Add headings
         headings = [
             "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-            "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+            "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
             f"DEPARTMENT - {dept}",
             "Annexure - X",
             "High Vendor Margin Less Profit Margin",
@@ -952,8 +956,8 @@ def annexure11_generate_excel_bytes(closing_df, sales_df, ibts_df):
         raise Exception("❌ Doc No missing in IBTS file")
 
     ibts_df["Doc No"] = ibts_df["Doc No"].astype(str)
-    ibts_df = ibts_df[ibts_df["Doc No"].str.contains("LBTS", case=False, na=False)]
-    ibts_df = ibts_df[~ibts_df["Doc No"].str.contains("LBTR", case=False, na=False)]
+    ibts_df = ibts_df[ibts_df["Doc No"].str.contains("BTS", case=False, na=False)]
+    ibts_df = ibts_df[~ibts_df["Doc No"].str.contains("BTR", case=False, na=False)]
 
     # --- NORMALIZE ATTRIBUTE ---
     def fix(df):
@@ -1010,7 +1014,7 @@ def annexure11_generate_excel_bytes(closing_df, sales_df, ibts_df):
 
             headers = [
                 "POTHYS RETAIL PRIVATE LIMITED - ALL BRANCH",
-                "INTERNAL AUDIT FOR THE PERIOD 01-DEC-2025 TO 31-DEC-2025",
+                "INTERNAL AUDIT FOR THE PERIOD 01-JAN-2026 TO 31-JAN-2026",
                 f"DEPARTMENT - {dept}",
                 "Annexure - XI",
                 "Non Movement of Stock for the period of 3 months",
